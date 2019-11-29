@@ -174,6 +174,33 @@ LF				equ		10
 	mov		alturaArquivo, 0
 	mov		baseArquivo, 0
 	mov		aux, 0
+	mov		alturaAux, 0
+	mov		linhaLida, 0
+	mov		tamStringNum, 0
+	mov		ladoLadrilho, 0
+	mov		flagBaseJanela, 0
+	mov		flagAlturaJanela, 0
+	mov		posX, 0
+	mov		posY, 0
+	mov		flagLado, 0
+	mov		linhaAtual, 0
+	mov		colunaAtual, 0
+	mov		PRETO, 0
+	mov		AZUL, 0
+	mov		VERMELHO, 0
+	mov		MAGENTA, 0
+	mov		MARROM, 0
+	mov		CINZA_CLARO, 0
+	mov		AZUL_CLARO, 0
+	mov		CIANO_CLARO, 0
+	mov		VERMELHO_CLARO, 0
+	mov		MAGENTA_CLARO, 0
+	mov		AMARELO, 0
+	mov		CINZA_ESCURO, 0
+	mov		AZUL_CLARO, 0
+	mov		VERDE, 0
+	mov		CIANO, 0
+	mov		VERDE_CLARO, 0
 	
 	;Chama a funcao para alterar o modo grafico para texto
 	call	modo_texto
@@ -255,7 +282,39 @@ fread	proc	near
 
 	
 
-read:
+read:	
+
+	mov		linhaLida, 0
+	mov		alturaArquivo, 0
+	mov		baseArquivo, 0
+	mov		aux, 0
+	mov		alturaAux, 0
+	mov		linhaLida, 0
+	mov		tamStringNum, 0
+	mov		ladoLadrilho, 0
+	mov		flagBaseJanela, 0
+	mov		flagAlturaJanela, 0
+	mov		posX, 0
+	mov		posY, 0
+	mov		flagLado, 0
+	mov		linhaAtual, 0
+	mov		colunaAtual, 0
+	mov		PRETO, 0
+	mov		AZUL, 0
+	mov		VERMELHO, 0
+	mov		MAGENTA, 0
+	mov		MARROM, 0
+	mov		CINZA_CLARO, 0
+	mov		AZUL_CLARO, 0
+	mov		CIANO_CLARO, 0
+	mov		VERMELHO_CLARO, 0
+	mov		MAGENTA_CLARO, 0
+	mov		AMARELO, 0
+	mov		CINZA_ESCURO, 0
+	mov		AZUL_CLARO, 0
+	mov		VERDE, 0
+	mov		CIANO, 0
+	mov		VERDE_CLARO, 0
 	
 	call	kbhit				;Aguarda o usuario digitar uma tecla para boltar para o loop
 	cmp		al, 0
