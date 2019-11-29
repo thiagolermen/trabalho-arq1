@@ -93,6 +93,7 @@ LF				equ		10
 	MsgCRLF2			db	CR, LF
 	identificacao		db	"Nome: Thiago Cartao: 00313020",CR,LF,0
 	msgFimExec			db	"Fim da execucao!",CR,LF,0
+	msgAutor			db	"**********   Autor: Thiago Sotoriva Lermen ***** Cartao: 00313020   **********", 0
 	
 	PRETO				dw		0
 	AZUL				dw		0
@@ -147,12 +148,24 @@ LF				equ		10
 	MAXSTRING	equ		200
 	String		db		MAXSTRING dup (?)		; Usado na funcao gets
 	numCor		db		10 	  	  dup (?)
+	CONSTX		equ		10
+	CONSTY		equ		25
 	
 	alturaArquivo	dw	0
 	baseArquivo		dw 	0
+	baseAux			dw	0
+	alturaAux		dw	0
 	linhaLida		dw 	0
 	tamStringNum	dw	0
 	aux				dw	0
+	ladoLadrilho 	dw	0
+	flagBaseJanela	dw	0
+	flagAlturaJanela	dw	0
+	posX			dw	0
+	posY			dw	0
+	flagLado		dw	0
+	linhaAtual		dw	0
+	colunaAtual		dw	0
 	.code
 	.startup
 	
@@ -185,23 +198,30 @@ Final:
 ;****************************************************
 modo_texto	proc	near
 	
+	push	ax
+	
 	mov		ah, 0
 	mov		al, 07h
 	int		10h
+	
+	pop	ax
 	
 	ret
 
 modo_texto	endp
 
 ;****************************************************
-;					MODO TEXTO
+;					MODO_GRAFICO
 ;****************************************************
 modo_grafico	proc	near
 	
+	push	ax
+	
 	mov		ah, 0
-	mov		al, 11h
+	mov		al, 12h
 	int		10h
 	
+	pop		ax
 	ret
 
 modo_grafico	endp
@@ -233,6 +253,28 @@ clrscr	endp
 ;****************************************************
 fread	proc	near
 
+	
+
+read:
+	
+	call	kbhit				;Aguarda o usuario digitar uma tecla para boltar para o loop
+	cmp		al, 0
+	
+	je 		read
+	
+	call 	clrbuff
+	
+	call	clrscr
+	
+	; printf("Nome: Thiago Cartao: 00313020\r\n")
+	lea		BX, identificacao
+	call	printf_s
+	
+	lea		bx,  fileNameSrc
+	mov		[bx], 0
+	lea		bx,  fileNameDst
+	mov		[bx], 0
+	
 	;GetFileNameSrc();	// Pega o nome do arquivo de origem -> FileNameSrc
 	call	GetFileNameSrc
 	
@@ -244,9 +286,6 @@ fread	proc	near
 pulaFimExecucao1:
 	lea		bx, msgFimExec
 	call	printf_s
-	
-	mov		bx,FileHandleSrc	; Fecha arquivo origem
-	call	fclose
 	
 	ret
 
@@ -270,7 +309,7 @@ abreArquivo:
 	lea		bx, MsgErroOpenFile
 	call	printf_s
 	
-	ret
+	jmp		read
 	
 Continua1:
 
@@ -287,8 +326,6 @@ pulaFimExecucao2:
 	call	printf_s
 	
 	mov		bx,FileHandleSrc	; Fecha arquivo origem
-	call	fclose
-	mov		bx,FileHandleDst	; Fecha arquivo origem
 	call	fclose
 	
 	ret	
@@ -314,7 +351,7 @@ criaArqDst:
 	lea		bx, MsgErroCreateFile
 	call	printf_s
 	
-	ret
+	jmp		read
 	
 Continua21:
 ;while(dl != ',')
@@ -343,14 +380,15 @@ leAltura:
 		
 		push	dx						;Salva na pilha o valor de dx
 		
-		mov		bx, alturaArquivo		;Multiplica por 10 o conteudo de alturaParede
-		mov		ax, 10
-		mul		bx
+		mov		ax, 10		;Multiplica por 10 o conteudo de alturaParede
+		mul		alturaArquivo
 		
 		pop		dx
 		
-		mov		alturaArquivo, bx
+		mov		alturaArquivo, ax		;Salva os dados de altura da parede
+		mov		alturaAux, ax
 		add		alturaArquivo, dx
+		add		alturaAux, dx
 		
 		jmp		dadoAltura
 		
@@ -361,36 +399,52 @@ dadoLargura:
 		mov		bx,FileHandleSrc
 		call	getChar	
 		jnc		leLargura				;Verifica se deu erro na leitura
-		
-		lea		bx, MsgErroReadFile
+	
+		;Se deu erro na abertura:
+		lea		bx, MsgErroReadFile		
 		call	printf_s
-		
 		mov		bx,FileHandleSrc
 		call	fclose
-		
 		mov		bx,FileHandleDst
 		call	fclose
 		
-		ret
+		jmp		read
 leLargura:
 		cmp		dl, CR					;Verifica se cheogu no final da linha
-		je		Continua2
+		je		ContinuaX
 		
 		sub		dl, 30h					;Tranfere para decimal
 		mov		dh, 0
 		
 		push	dx
 		
-		mov		bx, baseArquivo			;Realiza a multiplicacao por 10
-		mov		ax, 10
-		mul		bx
+		mov		ax, 10			;Realiza a multiplicacao por 10
+		mul		baseArquivo
 		
 		pop		dx
 		
-		mov		alturaArquivo, bx
-		add		alturaArquivo, dx
+		mov		baseArquivo, ax			;Salva os dados de base da parede
+		mov		baseAux, ax
+		add		baseArquivo, dx
+		add		baseAux, dx
 		
 		jmp		dadoLargura
+	
+ContinuaX:	
+	call	modo_grafico			;Altera para modo grafico (apaga a tela)
+	
+	lea		bx, msgAutor			;Printa a mensagem de autoria da parede
+	call	printf_s
+	
+	call	define_lado				;define o lado do ladrilho de acordo com o numero de ladrilhos e com a parede (bonus)
+	
+	mov		posX, 0
+	mov		posY, 15
+	call	desenha_borda_janela	;desenha a borda d a janela	
+	
+	
+	mov		colunaAtual, 0			;Inicializa as colunas e linhas atuais (para desenhar os ladrilhos)
+	mov		linhaAtual, 0
 	
 	
 Continua2:
@@ -406,18 +460,19 @@ Continua2:
 	call	getChar
 	jnc		Continua3
 	
+	;Se deu erro na leitura do caractere
 	lea		bx, MsgErroReadFile
 	call	printf_s
-	
 	mov		bx,FileHandleSrc
 	call	fclose
-	
 	mov		bx,FileHandleDst
 	call	fclose
 	
-	ret
+	jmp		read
 Continua3:
-
+	
+	
+	;verifica se chegou no final do arquivo
 	;	if (AX==0) break;
 	cmp		ax,0
 	jz		Continua4
@@ -425,6 +480,7 @@ Continua3:
 	
 pulaVerificaCor:	
 	;Verifica a cor do ladrilho lido do arquivo
+	;Entra no loop ate terminar o arquivo
 	call	verificaCor
 	
 	jmp		Continua2
@@ -836,7 +892,7 @@ erroEscritaDst:
 	mov		bx,FileHandleDst		; Fecha arquivo destino
 	call	fclose
 	
-	ret
+	jmp		read
 	
 	;} while(1);
 		
@@ -844,13 +900,21 @@ TerminouArquivo:
 	;fclose(FileHandleSrc)
 	;fclose(FileHandleDst)
 	;exit(0)
+	
+	call	kbhit				;Aguarda o usuario digitar uma tecla para boltar para o loop
+	cmp		al, 0
+	je 		TerminouArquivo
+	
+	
+	
+	
 	mov		bx,FileHandleSrc	; Fecha arquivo origem
 	call	fclose
 	mov		bx,FileHandleDst	; Fecha arquivo destino
 	call	fclose
 	
 
-	ret
+	jmp		read
 	
 fread 	endp
 		
@@ -882,6 +946,30 @@ GetFileNameSrc	endp
 
 
 verificaCor	proc	near
+
+	push	ax
+	push	bx
+	push 	cx
+	push 	dx
+	
+	cmp		baseAux, 0				;verifica se chegou no limite direito da parede
+	je		pulaLinhaParede
+	cmp		alturaAux, 0			;Verifica se chegou no limite inferior da parede
+	je		finalIncParede
+	jmp		comparaCor
+	
+	
+pulaLinhaParede:
+	inc		linhaAtual
+	dec		alturaAux
+	
+	mov		bx, baseArquivo			;Salva os dados de base da parede
+	mov		baseAux, bx
+	
+	mov		colunaAtual, 0
+	
+
+comparaCor:	
 	cmp		dl, '0'
 	je		incPreto
 	cmp		dl, '1'
@@ -914,57 +1002,295 @@ verificaCor	proc	near
 	je		incAmarelo
 	cmp		dl, 'F'
 	je		incBranco
+	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
 	ret
 
 incPreto:
 	inc		PRETO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+
+
+fimIncPreto:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
 	ret
 incAzul:
 	inc		AZUL
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+
+fimIncAzul:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
 	ret
 incVerde:
 	inc		VERDE
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+	
+	
+fimIncVerde:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
 	ret
 incCiano:
 	inc		CIANO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+	
+	
+fimIncCiano:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
 	ret
+	
+	
 incVermelho:
 	inc		VERMELHO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncVermelho:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
 	ret
+	
+	
 incMagenta:
 	inc		MAGENTA
-	ret
-incMarrom:
-	inc		MARROM
-	ret
-incCinzaClaro:
-	inc		CINZA_CLARO
-	ret
-incCinzaEscuro:
-	inc		CINZA_ESCURO
-	ret
-incAzulClaro:
-	inc		AZUL_CLARO
-	ret
-incVerdeClaro:
-	inc		VERDE_CLARO
-	ret
-incCianoClaro:
-	inc		CIANO_CLARO
-	ret
-incVermelhoClaro:
-	inc		VERMELHO_CLARO
-	ret
-incMagentaClaro:
-	inc		MAGENTA_CLARO
-	ret
-incAmarelo:
-	inc		AMARELO
-	ret
-incBranco:
-	inc		BRANCO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncMagenta:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
 	ret
 
+	
+incMarrom:
+	inc		MARROM	
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncMarrom:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax	
+	ret
+	
+	
+	
+incCinzaClaro:
+	inc		CINZA_CLARO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncCinzaClaro:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+	
+
+	
+incCinzaEscuro:
+	inc		CINZA_ESCURO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncCinzaEscuro:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax	
+	ret
+	
+	
+incAzulClaro:
+	inc		AZUL_CLARO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncAzulClaro:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+	
+	
+incVerdeClaro:
+	inc		VERDE_CLARO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncVerdeClaro:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+	
+	
+incCianoClaro:
+	inc		CIANO_CLARO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncCianoClaro:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+	
+	
+incVermelhoClaro:
+	inc		VERMELHO_CLARO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncVermelhoClaro:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+	
+	
+incMagentaClaro:
+	inc		MAGENTA_CLARO	
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncMagentaClaro:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+	
+	
+incAmarelo:
+	inc		AMARELO
+	
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux
+fimIncAmarelo:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+	
+	
+incBranco:
+	inc		BRANCO
+
+	call	define_pixel				;Define posX, posY
+	
+	call	desenha_borda_quadrado
+	
+	inc		colunaAtual
+	dec		baseAux	
+fimIncBranco:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+	
+	
+finalIncParede:
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+	
 verificaCor	endp
 
 
@@ -1272,6 +1598,306 @@ atoi_1:
 		; return
 		ret
 atoi	endp
+
+
+;****************************************************
+;				KBHIT
+;****************************************************
+;		Retorna:
+;			-AL == 0 se nao houve caractere digitado
+kbhit	proc	near
+	
+	
+	mov		ah, 0bh
+	int		21h
+	
+	ret
+kbhit	endp
+
+;****************************************************
+;				CLRBUFFER
+;****************************************************
+;		Retorna:
+;			-AL == 0 se nao houve caractere digitado
+clrbuff	proc	near
+	
+	
+	mov		ah, 0ch
+	mov		al, 0
+	int		21h
+	
+	ret
+clrbuff	endp
+
+
+;****************************************************
+;				DEFINE_LADO
+;****************************************************
+;define o lado de cada ladrilho de acordo com a quantidade de ladrilhos e o tamanho da tela (bonus)
+;	Entra:
+;		-Variavel ladoLadrilho para definir lado
+define_lado		proc	near
+
+	mov		ladoLadrilho, 24
+	
+	ret
+
+
+define_lado		endp
+
+
+;****************************************************
+;				DESENHA_BORDA_JANELA
+;****************************************************
+;Entra:
+;	- Coordenada X
+;	- Coordenada Y
+desenha_borda_janela	proc	near
+	push	ax
+	push	bx
+	push 	cx
+	push 	dx
+	mov		flagBaseJanela, 640
+	mov		flagAlturaJanela, 375
+	
+linhaCimaJanela:
+	cmp		flagBaseJanela, 1
+	je		linhaDirJanela
+
+;-
+	mov		ah, 0ch			;Liga pixel na tela
+	mov		al, 0Eh			;Valor da cor do pixel
+	mov		bh, 0			;Numero da pagina Grafica
+	mov 	cx, posX		;Move as coordenadas para serem usadas na interrupcao
+	mov 	dx, posY
+	int 	10h
+;-
+
+	dec		flagBaseJanela
+	inc		posX
+	jmp		linhaCimaJanela
+	
+linhaDirJanela:
+	mov		flagAlturaJanela, 375
+	
+linhaDirJanela1:
+	cmp		flagAlturaJanela, 1
+	je		linhaBaixoJanela
+
+;Chama a interrupcao para desenhar pixel
+;-	
+	mov		ah, 0ch			;Liga pixel na tela
+	mov		al, 0Eh			;Valor da cor do pixel
+	mov		bh, 0			;Numero da pagina Grafica
+	mov 	cx, posX		;Move as coordenadas para serem usadas na interrupcao
+	mov 	dx, posY
+	
+	int 	10h
+;-	
+
+	dec		flagAlturaJanela
+	inc		posY
+	jmp		linhaDirJanela1
+
+linhaBaixoJanela:
+	mov		flagBaseJanela, 640
+	
+linhaBaixoJanela1:
+	cmp		flagBaseJanela, 1
+	je		linhaEsqJanela
+
+;Chama a interrupcao para desenhar pixel
+;-	
+	mov		ah, 0ch			;Liga pixel na tela
+	mov		al, 0Eh			;Valor da cor do pixel (amarelo)
+	mov		bh, 0			;Numero da pagina Grafica
+	mov 	cx, posX		;Move as coordenadas para serem usadas na interrupcao
+	mov 	dx, posY
+	
+	int 	10h
+;-	
+
+	dec		flagBaseJanela
+	dec		posX
+	jmp		linhaBaixoJanela1
+
+linhaEsqJanela:
+	mov		flagAlturaJanela, 375
+	
+linhaEsqJanela1:
+	cmp		flagAlturaJanela, 1
+	je		finalDesenhaJanela
+
+;Chama a interrupcao para desenhar pixel
+;-	
+	mov		ah, 0ch			;Liga pixel na tela
+	mov		al, 0Eh			;Valor da cor do pixel
+	mov		bh, 0			;Numero da pagina Grafica
+	mov 	cx, posX		;Move as coordenadas para serem usadas na interrupcao
+	mov 	dx, posY
+	int 	10h
+;-	
+
+	dec		flagAlturaJanela
+	dec		posY
+	jmp		linhaEsqJanela1
+
+finalDesenhaJanela:
+
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+
+	ret
+
+desenha_borda_janela	endp
+
+
+;****************************************************
+;				DESENHA_BORDA_QUADRADO
+;****************************************************
+;Entra:
+;	- Coordenada X (posX)
+;	- Coordenada Y (posY)
+desenha_borda_quadrado	proc	near
+	;Salva registradores na pilha
+	push	ax		
+	push	bx
+	push 	cx
+	push 	dx
+	
+	mov		bx, ladoLadrilho
+	mov		flagLado, bx		;Move a largura do quadrado para flagLado
+	
+linhaCima:
+	cmp		flagLado, 1
+	je		linhaDir
+
+;-
+	mov		ah, 0ch			;Liga pixel na tela
+	mov		al, 0fh			;Valor da cor do pixel
+	mov		bh, 0			;Numero da pagina Grafica
+	mov 	cx, posX		;Move as coordenadas para serem usadas na interrupcao
+	mov 	dx, posY
+	int 	10h
+;-
+
+	dec		flagLado
+	inc		posX
+	jmp		linhaCima
+	
+linhaDir:
+	mov		bx, ladoLadrilho
+	mov		flagLado, bx		;Move a largura do quadrado para flagLado
+	
+linhaDir1:
+	cmp		flagLado, 1
+	je		linhaBaixo
+
+;Chama a interrupcao para desenhar pixel
+;-	
+	mov		ah, 0ch			;Liga pixel na tela
+	mov		al, 0fh			;Valor da cor do pixel
+	mov		bh, 0			;Numero da pagina Grafica
+	mov 	cx, posX		;Move as coordenadas para serem usadas na interrupcao
+	mov 	dx, posY
+	
+	int 	10h
+;-	
+
+	dec		flagLado
+	inc		posY
+	jmp		linhaDir1
+
+linhaBaixo:
+	mov		bx, ladoLadrilho
+	mov		flagLado, bx		;Move a largura do quadrado para flagLado
+	
+linhaBaixo1:
+	cmp		flagLado, 1
+	je		linhaEsq
+
+;Chama a interrupcao para desenhar pixel
+;-	
+	mov		ah, 0ch			;Liga pixel na tela
+	mov		al, 0fh			;Valor da cor do pixel
+	mov		bh, 0			;Numero da pagina Grafica
+	mov 	cx, posX		;Move as coordenadas para serem usadas na interrupcao
+	mov 	dx, posY
+	
+	int 	10h
+;-	
+
+	dec		flagLado
+	dec		posX
+	jmp		linhaBaixo1
+
+linhaEsq:
+	mov		bx, ladoLadrilho
+	mov		flagLado, bx		;Move a largura do quadrado para flagLado
+	
+linhaEsq1:
+	cmp		flagLado, 1
+	je		finalDesenhaBorda
+
+;Chama a interrupcao para desenhar pixel
+;-	
+	mov		ah, 0ch			;Liga pixel na tela
+	mov		al, 0fh			;Valor da cor do pixel
+	mov		bh, 0			;Numero da pagina Grafica
+	mov 	cx, posX		;Move as coordenadas para serem usadas na interrupcao
+	mov 	dx, posY
+	int 	10h
+;-	
+
+	dec		flagLado
+	dec		posY
+	jmp		linhaEsq1
+
+finalDesenhaBorda:
+
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+
+	ret
+
+desenha_borda_quadrado	endp
+;****************************************************
+;				DEFINE_PIXEL
+;****************************************************
+;Retorna:
+;	- Coordenada X (posX)
+;	- Coordenada Y (posY)
+define_pixel	proc	near
+	
+	push	ax
+	push	dx
+	
+	mov		ax, ladoLadrilho			;Faz a multiplicacao para determinar o pixel (X, Y) atual
+	mul		colunaAtual
+	mov		posX, ax
+	add		posX, CONSTX
+	
+	pop		dx
+	
+	push	dx
+	
+	mov		ax, ladoLadrilho
+	mul		linhaAtual
+	mov		posY, ax 
+	add		posY, CONSTY
+	
+	pop		dx
+	pop		ax
+	
+	ret
+
+define_pixel	endp
+
+
 ;****************************************************
 		end
 ;****************************************************
