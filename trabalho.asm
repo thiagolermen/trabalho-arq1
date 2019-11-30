@@ -158,14 +158,19 @@ LF				equ		10
 	linhaLida		dw 	0
 	tamStringNum	dw	0
 	aux				dw	0
+	auxY			dw	0
+	auxX			dw	0
 	ladoLadrilho 	dw	0
 	flagBaseJanela	dw	0
 	flagAlturaJanela	dw	0
 	posX			dw	0
 	posY			dw	0
+	cor				db	0
 	flagLado		dw	0
 	linhaAtual		dw	0
 	colunaAtual		dw	0
+	flagPintaAltura	dw	0
+	flagPintaLargura	dw	0
 	.code
 	.startup
 	
@@ -173,7 +178,9 @@ LF				equ		10
 	mov		linhaLida, 0
 	mov		alturaArquivo, 0
 	mov		baseArquivo, 0
-	mov		aux, 0
+	mov		auxY, 0
+	mov 	auxX, 0
+	mov		cor, 0
 	mov		alturaAux, 0
 	mov		linhaLida, 0
 	mov		tamStringNum, 0
@@ -201,6 +208,8 @@ LF				equ		10
 	mov		VERDE, 0
 	mov		CIANO, 0
 	mov		VERDE_CLARO, 0
+	mov		flagPintaAltura, 0
+	mov		flagPintaLargura, 0
 	
 	;Chama a funcao para alterar o modo grafico para texto
 	call	modo_texto
@@ -287,7 +296,9 @@ read:
 	mov		linhaLida, 0
 	mov		alturaArquivo, 0
 	mov		baseArquivo, 0
-	mov		aux, 0
+	mov		auxY, 0
+	mov 	auxX, 0
+	mov		cor, 0
 	mov		alturaAux, 0
 	mov		linhaLida, 0
 	mov		tamStringNum, 0
@@ -315,6 +326,8 @@ read:
 	mov		VERDE, 0
 	mov		CIANO, 0
 	mov		VERDE_CLARO, 0
+	mov		flagPintaAltura, 0
+	mov		flagPintaLargura, 0
 	
 	call	kbhit				;Aguarda o usuario digitar uma tecla para boltar para o loop
 	cmp		al, 0
@@ -1073,7 +1086,10 @@ incPreto:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda branca do quadrado
+	
+	mov		cor, 00h						;Pinta o ladrilho de preto
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1090,7 +1106,12 @@ incAzul:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 01h						;Pinta o quadrado de azul			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1106,7 +1127,12 @@ incVerde:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 02h						;Pinta o quadrado de verde			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1123,7 +1149,12 @@ incCiano:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 03h						;Pinta o quadrado de ciano			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1142,7 +1173,12 @@ incVermelho:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 04h						;Pinta o quadrado de vermelho			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1159,7 +1195,12 @@ incMagenta:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 05h						;Pinta o quadrado de magenta			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1176,7 +1217,12 @@ incMarrom:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 06h						;Pinta o quadrado de marrom			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1194,7 +1240,12 @@ incCinzaClaro:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 07h						;Pinta o quadrado de cinza claro			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1212,7 +1263,12 @@ incCinzaEscuro:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 08h						;Pinta o quadrado de cinza escuro			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1229,7 +1285,12 @@ incAzulClaro:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 09h						;Pinta o quadrado de azul claro			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1246,7 +1307,12 @@ incVerdeClaro:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 0Ah						;Pinta o quadrado de verde claro			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1263,7 +1329,12 @@ incCianoClaro:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 0Bh						;Pinta o quadrado de ciano claro			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1280,7 +1351,12 @@ incVermelhoClaro:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 0Ch						;Pinta o quadrado de vermelho claro			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1297,7 +1373,12 @@ incMagentaClaro:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 0Dh						;Pinta o quadrado de magenta claro			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1314,7 +1395,12 @@ incAmarelo:
 	
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 0Eh						;Pinta o quadrado de amarelo			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux
@@ -1331,7 +1417,12 @@ incBranco:
 
 	call	define_pixel				;Define posX, posY
 	
-	call	desenha_borda_quadrado
+	call	desenha_borda_quadrado		;Desenha a borda btanca do quadrado
+	
+	call	define_pixel				;Define posX, posY
+	
+	mov		cor, 0Fh						;Pinta o quadrado de branco			
+	call	pinta_quadrado
 	
 	inc		colunaAtual
 	dec		baseAux	
@@ -1955,6 +2046,80 @@ define_pixel	proc	near
 	ret
 
 define_pixel	endp
+
+
+;****************************************************
+;				PINTA_QUADRADO
+;****************************************************
+;Entra:
+;	- Coordenada X (posX)
+;	- Coordenada Y (posY)
+;	- Cor (bl)
+
+pinta_quadrado	proc	near
+	push	ax		
+	push	bx
+	push 	cx
+	push 	dx
+
+	
+	;Salva posicoes das coordenadas (x,y) em auxiliares
+	mov		ax, posY
+	mov		auxY, ax
+	mov		ax, posX
+	mov		auxX, ax
+	
+	mov		flagPintaAltura, 1
+	mov		flagPintaLargura, 1
+;while(flagPintaLargura < ladoLadrilho) 
+loopPinta1:	
+	inc		posX
+	inc		flagPintaLargura
+	
+	mov		ax, posY
+	mov		auxY, ax
+	inc		auxY
+	
+	mov		flagPintaAltura, 2
+	
+	mov		ax, flagPintaLargura
+	cmp		ax, ladoLadrilho
+	je		finalPintaQuadrado
+;while(flagPintaAltura < ladoLadrilho) 
+loopPinta2:
+	mov		ax, flagPintaAltura
+	cmp		ax, ladoLadrilho
+	je		loopPinta1
+	
+	;Chama a interrupcao para desenhar pixel
+;-	
+	mov		ah, 0ch			;Liga pixel na tela
+	mov		al, cor			;Valor da cor do pixel
+	mov		bh, 0			;Numero da pagina Grafica
+	mov 	cx, posX		;Move as coordenadas para serem usadas na interrupcao
+	mov 	dx, auxY
+	int 	10h
+;-	
+
+	inc		auxY
+	inc		flagPintaAltura
+	
+	jmp		loopPinta2
+	
+	
+finalPintaQuadrado:
+
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	
+	ret
+
+	
+	
+
+pinta_quadrado	endp
 
 
 ;****************************************************
