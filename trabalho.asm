@@ -176,6 +176,8 @@ LF				equ		10
 	flagPintaAltura	dw	0
 	flagPintaLargura	dw	0
 	constMaior		dw	0
+	constAltura		dw 	0
+	constBase		dw 	0
 	.code
 	.startup
 	
@@ -218,6 +220,8 @@ LF				equ		10
 	mov		flagPintaAltura, 0
 	mov		flagPintaLargura, 0
 	mov		constMaior, 0
+	mov		constBase, 0
+	mov		constAltura, 0
 	
 	
 	
@@ -366,6 +370,8 @@ read:
 	lea		bx,  fileNameSrc
 	cmp		[bx], 0
 	je		pulaFimExecucao1
+	
+	call	concat_par
 	jmp		abreArquivo
 	
 pulaFimExecucao1:
@@ -399,11 +405,14 @@ abreArquivo:
 Continua1:
 
 	;GetFileNameDst();	// Pega o nome do arquivo de origem -> FileNameDst
-	call	GetFileNameDst
+	;call	GetFileNameDst
 	
-	lea		bx,  fileNameDst
-	cmp		[bx], 0
-	je		pulaFimExecucao2
+	;lea		bx,  fileNameDst
+	;cmp		[bx], 0
+	;je		pulaFimExecucao2
+	
+	call	CriaNomeArqSaida
+	
 	jmp		criaArqDst
 
 pulaFimExecucao2:
@@ -593,7 +602,10 @@ preto1:
 	mov		posCursorY, 26
 	mov		posCursorX, 2
 	mov		cor, 00h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	
 	lea		dx, stringPreto				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
@@ -630,7 +642,10 @@ azul1:
 	mov		posCursorY, 26
 	mov		posCursorX, 7
 	mov		cor, 01h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	
 	lea		dx, stringAzul				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
@@ -665,7 +680,10 @@ verde1:
 	mov		posCursorY, 26
 	mov		posCursorX, 11
 	mov		cor, 02h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	lea		dx, stringVerde				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamVerde				;Quantidqade de caracteres a serem escritos
@@ -699,7 +717,10 @@ ciano1:
 	mov		posCursorY, 26
 	mov		posCursorX, 15
 	mov		cor, 03h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	
 	lea		dx, stringCiano				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
@@ -733,7 +754,10 @@ vermelho1:
 	mov		posCursorY, 26
 	mov		posCursorX, 20
 	mov		cor, 04h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	
 	lea		dx, stringVermelho				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
@@ -766,7 +790,10 @@ magenta1:
 	mov		posCursorY, 26
 	mov		posCursorX, 24
 	mov		cor, 05h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	lea		dx, stringMagenta			;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamMagenta				;Quantidqade de caracteres a serem escritos
@@ -799,7 +826,10 @@ marrom1:
 	mov		posCursorY, 26
 	mov		posCursorX, 28
 	mov		cor, 06h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	
 	lea		dx, stringMarrom			;Move a endereco da string para o dx para ser usado na funcao fprintf_s
@@ -833,7 +863,10 @@ cinzaClaro1:
 	mov		posCursorY, 26
 	mov		posCursorX, 32
 	mov		cor, 07h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	
 	lea		dx, stringCinzaClaro		;Move a endereco da string para o dx para ser usado na funcao fprintf_s
@@ -866,7 +899,10 @@ cinzaEscuro1:
 	mov		posCursorY, 26
 	mov		posCursorX, 37
 	mov		cor, 08h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	lea		dx, stringCinzaEscuro		;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamCinzaEscuro			;Quantidqade de caracteres a serem escritos
@@ -899,7 +935,10 @@ azulClaro1:
 	mov		posCursorY, 26
 	mov		posCursorX, 41
 	mov		cor, 09h
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	
 	lea		dx, stringAzulClaro			;Move a endereco da string para o dx para ser usado na funcao fprintf_s
@@ -933,7 +972,10 @@ verdeClaro1:
 	mov		posCursorY, 26
 	mov		posCursorX, 45
 	mov		cor, 0Ah
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	lea		dx, stringVerdeClaro	;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamVerdeClaro		;Quantidqade de caracteres a serem escritos
@@ -966,7 +1008,10 @@ cianoClaro1:
 	mov		posCursorY, 26
 	mov		posCursorX, 50
 	mov		cor, 0Bh
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	lea		dx, stringCianoClaro	;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamCianoClaro		;Quantidqade de caracteres a serem escritos
@@ -999,7 +1044,10 @@ vermelhoClaro1:
 	mov		posCursorY, 26
 	mov		posCursorX, 54
 	mov		cor, 0Ch
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	lea		dx, stringVermelhoClaro	;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamVermelhoClaro	;Quantidqade de caracteres a serem escritos
@@ -1032,12 +1080,17 @@ magentaClaro1:
 	mov		posCursorY, 26
 	mov		posCursorX, 58
 	mov		cor, 0Dh
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
+	
 	
 	lea		dx, stringMagentaClaro	;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamMagentaClaro		;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
 	jc		erroEscritaDst
+	
 	
 	lea		dx, numCor				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, 2					;Quantidqade de caracteres a serem escritos
@@ -1065,12 +1118,17 @@ amarelo1:
 	mov		posCursorY, 26
 	mov		posCursorX, 62
 	mov		cor, 0Eh
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
+	
 	
 	lea		dx, stringAmarelo		;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamAmarelo			;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
 	jc		erroEscritaDst
+	
 	
 	lea		dx, numCor				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, 2					;Quantidqade de caracteres a serem escritos
@@ -1098,7 +1156,10 @@ branco1:
 	mov		posCursorY, 26
 	mov		posCursorX, 64
 	mov		cor, 0Fh
+	push	ladoLadrilho
+	mov		ladoLadrilho, 24
 	call	desenha_rodape
+	pop		ladoLadrilho
 	
 	lea		dx, stringBranco		;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamBranco			;Quantidqade de caracteres a serem escritos
@@ -1940,8 +2001,6 @@ kbhit	endp
 ;****************************************************
 ;				CLRBUFFER
 ;****************************************************
-;		Retorna:
-;			-AL == 0 se nao houve caractere digitado
 clrbuff	proc	near
 	
 	
@@ -1963,12 +2022,103 @@ define_lado		proc	near
 
 	mov		ladoLadrilho, 24
 	
+	push	ax
+	push	bx
+	push 	cx
+	push 	dx
+	
+	mov		bx, alturaArquivo
+	cmp		bx ,baseArquivo
+	jae		mudaLadoAltura
+	jmp		mudaLadoBase
+
+mudaLadoAltura:
+	
+	call	multplica_constaltura
+	jmp		finalDefine
+
+mudaLadoBase:
+	
+	call	multplica_constbase
+	jmp		finalDefine
+	
+finalDefine:	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
 	ret
 
 
 define_lado		endp
 
+;****************************************************
+;				MULTIPLICA_CONSTALTURA
+;****************************************************
+multplica_constaltura	proc	near
+		push	ax
+		push	bx
+		push 	cx
+		push 	dx
+		
+		
+		;mov		ax, alturaArquivo
+		;mul		ladoLadrilho
+		;mov		constAltura, ax
+		
+		mov 	dx, 0
+		mov 	ax, 360
+		mov 	bx, alturaArquivo
+		div 	bx
+		mov		ladoLadrilho, ax
+		
+		;mov		ax, ladoLadrilho
+		;mul		constAltura
+		;mov		ladoLadrilho, ax
+		
+			
+		pop		dx
+		pop		cx
+		pop		bx
+		pop		ax
+		
+		ret
+		
 
+multplica_constaltura	endp
+
+
+;****************************************************
+;				MULTIPLICA_CONSTBASE
+;****************************************************
+multplica_constbase	proc	near
+
+		push	ax
+		push	bx
+		push 	cx
+		push 	dx
+		
+		;mov		ax, baseArquivo
+		;mul		ladoLadrilho
+		;mov		constBase, ax
+		
+		mov 	dx, 0        		; clear dividend
+		mov 	ax, 624  			 ; dividend
+		mov 	bx, baseArquivo    	; divisor
+		div 	bx           		; EAX = 0x80, EDX = 0x3
+		mov		ladoLadrilho, ax
+		
+		;mov		ax, ladoLadrilho
+		;mul		constBase
+		;mov		ladoLadrilho, ax
+			
+		pop		dx
+		pop		cx
+		pop		bx
+		pop		ax
+		
+		ret
+multplica_constbase	endp
 ;****************************************************
 ;				DESENHA_BORDA_JANELA
 ;****************************************************
@@ -2188,6 +2338,7 @@ finalDesenhaBorda:
 	ret
 
 desenha_borda_quadrado	endp
+
 ;****************************************************
 ;				DEFINE_PIXEL
 ;****************************************************
@@ -2362,6 +2513,97 @@ mensagem_rodape		proc	near
 	
 	ret
 mensagem_rodape		endp
+
+;****************************************************
+;				criaArqDst
+;****************************************************
+;Entra:
+;	Nome do arquivo de entrada (fileNameSrc)
+;	Subrotina para criar o nome do arquivo de saida a partir do nome do arquivo de entrada
+;	Nome do arquivo de entrada sem o .par e adicionando o .rel
+CriaNomeArqSaida	proc	near
+
+	push 	bx
+	push	cx
+	
+	lea 	bx, FileNameSrc
+	lea		si, FileNameDst
+	
+
+ProxCharSaida:
+	cmp		byte ptr[bx], '.'
+	jz		EhPonto
+	mov		cx,	0
+	
+	mov 	cl, byte ptr[bx]
+	mov		byte ptr[si], cl
+	
+	
+	inc		bx
+	inc		si
+	jmp		ProxCharSaida
+	
+	
+EhPonto:
+	mov 	byte ptr[si], '.'
+	inc		si
+	mov		byte ptr[si], 'r'
+	inc		si
+	mov		byte ptr[si], 'e'
+	inc		si
+	mov		byte ptr[si], 'l'
+	inc		si
+	mov		byte ptr[si], 0
+	
+	
+Acabou_nome:
+	pop 	cx
+	pop		bx
+	ret
+	
+CriaNomeArqSaida	endp
+
+
+;****************************************************
+;				concat_par
+;****************************************************
+;Entra:
+;	Nome do arquivo de entrada (fileNameSrc)
+;	Subrotina para concatenas '.par' no arquivo de entrada caso nao tenha sido digitado
+
+concat_par	proc	near
+
+	push 	bx
+	
+	lea 	bx, FileNameSrc
+
+loopLeString:	
+	cmp		byte ptr[bx], '.'
+	jz		comPonto
+	cmp		byte ptr[bx], 0
+	jz		concatPar
+	
+	inc		bx
+	jmp		loopLeString
+	
+concatPar:
+	mov 	byte ptr[bx], '.'
+	inc		bx
+	mov		byte ptr[bx], 'p'
+	inc		bx
+	mov		byte ptr[bx], 'a'
+	inc		bx
+	mov		byte ptr[bx], 'r'
+	inc		bx
+	mov		byte ptr[bx], 0
+	
+comPonto:
+	pop		bx
+	ret
+
+concat_par	endp
+
+
 ;****************************************************
 		end
 ;****************************************************
