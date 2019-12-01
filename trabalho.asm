@@ -2028,6 +2028,7 @@ define_lado		proc	near
 	push 	dx
 	
 	mov		bx, alturaArquivo
+	add		bx, 3
 	cmp		bx ,baseArquivo
 	jae		mudaLadoAltura
 	jmp		mudaLadoBase
@@ -2119,6 +2120,14 @@ multplica_constbase	proc	near
 		
 		ret
 multplica_constbase	endp
+
+
+
+;####################################################
+;A logica das funcoes que envolvem modo gráfico
+;foi desenvolvida juntamente com o aluno
+;Gabriel Pedroso.
+;####################################################
 ;****************************************************
 ;				DESENHA_BORDA_JANELA
 ;****************************************************
