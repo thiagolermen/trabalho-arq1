@@ -94,6 +94,8 @@ LF				equ		10
 	identificacao		db	"Nome: Thiago Cartao: 00313020",CR,LF,0
 	msgFimExec			db	"Fim da execucao!",CR,LF,0
 	msgAutor			db	"**********   Autor: Thiago Sotoriva Lermen ***** Cartao: 00313020   **********", 0
+	msgRodape1			db	"Arquivo", 0
+	msgRodape2			db	" - Total de ladrilhos por cor:", 0
 	
 	PRETO				dw		0
 	AZUL				dw		0
@@ -165,12 +167,15 @@ LF				equ		10
 	flagAlturaJanela	dw	0
 	posX			dw	0
 	posY			dw	0
+	posCursorX		db  0
+	posCursorY		db 	0
 	cor				db	0
 	flagLado		dw	0
 	linhaAtual		dw	0
 	colunaAtual		dw	0
 	flagPintaAltura	dw	0
 	flagPintaLargura	dw	0
+	constMaior		dw	0
 	.code
 	.startup
 	
@@ -189,6 +194,8 @@ LF				equ		10
 	mov		flagAlturaJanela, 0
 	mov		posX, 0
 	mov		posY, 0
+	mov		posCursorX, 0
+	mov		posCursorY,	0
 	mov		flagLado, 0
 	mov		linhaAtual, 0
 	mov		colunaAtual, 0
@@ -210,6 +217,9 @@ LF				equ		10
 	mov		VERDE_CLARO, 0
 	mov		flagPintaAltura, 0
 	mov		flagPintaLargura, 0
+	mov		constMaior, 0
+	
+	
 	
 	;Chama a funcao para alterar o modo grafico para texto
 	call	modo_texto
@@ -307,6 +317,8 @@ read:
 	mov		flagAlturaJanela, 0
 	mov		posX, 0
 	mov		posY, 0
+	mov		posCursorX, 0
+	mov		posCursorY,	0
 	mov		flagLado, 0
 	mov		linhaAtual, 0
 	mov		colunaAtual, 0
@@ -328,6 +340,7 @@ read:
 	mov		VERDE_CLARO, 0
 	mov		flagPintaAltura, 0
 	mov		flagPintaLargura, 0
+	mov		constMaior, 0
 	
 	call	kbhit				;Aguarda o usuario digitar uma tecla para boltar para o loop
 	cmp		al, 0
@@ -508,6 +521,8 @@ ContinuaX:
 	lea		bx, msgAutor			;Printa a mensagem de autoria da parede
 	call	printf_s
 	
+	call	mensagem_rodape
+	
 	call	define_lado				;define o lado do ladrilho de acordo com o numero de ladrilhos e com a parede (bonus)
 	
 	mov		posX, 0
@@ -564,13 +579,23 @@ preto1:
 
 	;Faz a conversao de decimal para ASCII para ser printado no arquivo
 	; fprintf_s (String, "%d", #PRETOS);
-	mov		ax, PRETO
+	mov		ax, PRETO					;NUMCOR guarda o ascii do numero de ladrilhos
 	mov		numCor, 0
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		PRETO, 0
 	je		azul1
+	
+	mov		posY, 440
+	mov		posX, 15
+	mov		posCursorY, 26
+	mov		posCursorX, 2
+	mov		cor, 00h
+	call	desenha_rodape
+	
+	
 	lea		dx, stringPreto				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamPreto				;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -596,8 +621,18 @@ azul1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		AZUL, 0
 	je		verde1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 52
+	mov		posCursorY, 26
+	mov		posCursorX, 7
+	mov		cor, 01h
+	call	desenha_rodape
+	
+	
 	lea		dx, stringAzul				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamAzul					;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -621,8 +656,17 @@ verde1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		VERDE, 0
 	je		ciano1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 86
+	mov		posCursorY, 26
+	mov		posCursorX, 11
+	mov		cor, 02h
+	call	desenha_rodape
+	
 	lea		dx, stringVerde				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamVerde				;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -646,8 +690,18 @@ ciano1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		CIANO, 0
 	je		vermelho1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 120
+	mov		posCursorY, 26
+	mov		posCursorX, 15
+	mov		cor, 03h
+	call	desenha_rodape
+	
+	
 	lea		dx, stringCiano				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamCiano				;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -670,8 +724,18 @@ vermelho1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		VERMELHO, 0
 	je		magenta1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 154
+	mov		posCursorY, 26
+	mov		posCursorX, 20
+	mov		cor, 04h
+	call	desenha_rodape
+	
+	
 	lea		dx, stringVermelho				;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamVermelho					;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -696,6 +760,14 @@ magenta1:
 	
 	cmp		MAGENTA, 0
 	je		marrom1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 188
+	mov		posCursorY, 26
+	mov		posCursorX, 24
+	mov		cor, 05h
+	call	desenha_rodape
+	
 	lea		dx, stringMagenta			;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamMagenta				;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -718,8 +790,18 @@ marrom1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		MARROM, 0
 	je		cinzaClaro1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 222
+	mov		posCursorY, 26
+	mov		posCursorX, 28
+	mov		cor, 06h
+	call	desenha_rodape
+	
+	
 	lea		dx, stringMarrom			;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamMarrom				;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -742,8 +824,18 @@ cinzaClaro1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		CINZA_CLARO, 0
 	je		cinzaEscuro1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 256
+	mov		posCursorY, 26
+	mov		posCursorX, 32
+	mov		cor, 07h
+	call	desenha_rodape
+	
+	
 	lea		dx, stringCinzaClaro		;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamCinzaClaro			;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -768,6 +860,14 @@ cinzaEscuro1:
 	
 	cmp		CINZA_ESCURO, 0
 	je		azulClaro1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 290
+	mov		posCursorY, 26
+	mov		posCursorX, 37
+	mov		cor, 08h
+	call	desenha_rodape
+	
 	lea		dx, stringCinzaEscuro		;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamCinzaEscuro			;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -790,8 +890,18 @@ azulClaro1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		AZUL_CLARO, 0
 	je		verdeClaro1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 324
+	mov		posCursorY, 26
+	mov		posCursorX, 41
+	mov		cor, 09h
+	call	desenha_rodape
+	
+	
 	lea		dx, stringAzulClaro			;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamAzulClaro			;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -814,8 +924,17 @@ verdeClaro1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		VERDE_CLARO, 0
 	je		cianoClaro1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 358
+	mov		posCursorY, 26
+	mov		posCursorX, 45
+	mov		cor, 0Ah
+	call	desenha_rodape
+	
 	lea		dx, stringVerdeClaro	;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamVerdeClaro		;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -838,8 +957,17 @@ cianoClaro1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		CIANO_CLARO, 0
 	je		vermelhoClaro1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 392
+	mov		posCursorY, 26
+	mov		posCursorX, 50
+	mov		cor, 0Bh
+	call	desenha_rodape
+	
 	lea		dx, stringCianoClaro	;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamCianoClaro		;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -862,8 +990,17 @@ vermelhoClaro1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		VERMELHO_CLARO, 0
 	je		magentaClaro1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 426
+	mov		posCursorY, 26
+	mov		posCursorX, 54
+	mov		cor, 0Ch
+	call	desenha_rodape
+	
 	lea		dx, stringVermelhoClaro	;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamVermelhoClaro	;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -886,8 +1023,17 @@ magentaClaro1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		MAGENTA_CLARO, 0
 	je		amarelo1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 460
+	mov		posCursorY, 26
+	mov		posCursorX, 58
+	mov		cor, 0Dh
+	call	desenha_rodape
+	
 	lea		dx, stringMagentaClaro	;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamMagentaClaro		;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -913,6 +1059,14 @@ amarelo1:
 	
 	cmp		AMARELO, 0
 	je		branco1
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 494
+	mov		posCursorY, 26
+	mov		posCursorX, 62
+	mov		cor, 0Eh
+	call	desenha_rodape
+	
 	lea		dx, stringAmarelo		;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamAmarelo			;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -935,8 +1089,17 @@ branco1:
 	lea		bx, numCor
 	call	sprintf_w
 	
+	
 	cmp		BRANCO, 0
 	je		pulaFimArquivo
+	
+	mov		posY, 440					;Desenha o rodape
+	mov		posX, 528
+	mov		posCursorY, 26
+	mov		posCursorX, 64
+	mov		cor, 0Fh
+	call	desenha_rodape
+	
 	lea		dx, stringBranco		;Move a endereco da string para o dx para ser usado na funcao fprintf_s
 	mov		cx, tamBranco			;Quantidqade de caracteres a serem escritos
 	call	fprintf_s
@@ -1749,6 +1912,16 @@ atoi_1:
 		ret
 atoi	endp
 
+;****************************************************
+;				SET_CURSOR
+;****************************************************
+;Entra : DL=X, DH=Y.
+set_cursor proc
+      mov  ah, 2                  ;Setar a posicao do cursor
+      mov  bh, 0                  ;Pagina grafica
+      int  10h                    ;interrupcao
+      RET
+set_cursor endp
 
 ;****************************************************
 ;				KBHIT
@@ -2054,7 +2227,7 @@ define_pixel	endp
 ;Entra:
 ;	- Coordenada X (posX)
 ;	- Coordenada Y (posY)
-;	- Cor (bl)
+;	- Cor (cor)
 
 pinta_quadrado	proc	near
 	push	ax		
@@ -2122,6 +2295,73 @@ finalPintaQuadrado:
 pinta_quadrado	endp
 
 
+
+;****************************************************
+;				DESENHA_RODAPE
+;****************************************************
+;Entra:
+;	- Coordenada X (posX)
+;	- Coordenada Y (posY)
+;	- Cor (cor)
+;	- Numero em ASCII da quantidade de ladrilhos da cor (numCor)
+;	- Coordenada X do cursor (posCursorX)
+;	- Coordenada Y do cursor (posCursorY)
+desenha_rodape	proc	near
+
+	push	ax
+	push 	bx
+	push	cx
+	push	dx
+	
+	call	desenha_borda_quadrado		;Desenha a borda branca do quadrado
+	call	pinta_quadrado				;Pinta o quadrado com respectiva cor
+	
+	mov		dl, posCursorX
+	mov		dh, posCursorY
+	call	set_cursor					;Seta a posicao do cursor para printar a qunatidade de quadrados
+	
+	lea		bx, numCor					;Printa as valores de cada cor
+	call	printf_s
+	
+	
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+		
+	
+	ret
+
+desenha_rodape	endp
+
+;****************************************************
+;				MENSAGEM_RODAPE
+;****************************************************
+;Entra:
+;	Nome do arquivo de entrada (fileNameSrc)
+
+mensagem_rodape		proc	near
+
+	mov		dl, 0						;Printa as mensagem rodape
+	mov		dh, 25
+	call	set_cursor					;Seta a posicao do cursor para printar a qunatidade de quadrados
+	lea		bx, msgRodape1					
+	call	printf_s
+	
+	mov		dl, 9						;Printa as mensagem rodape
+	mov		dh, 25
+	call	set_cursor					;Seta a posicao do cursor para printar a qunatidade de quadrados
+	lea		bx, fileNameSrc					
+	call	printf_s
+	
+	mov		dl, 23						;Printa as mensagem rodape
+	mov		dh, 25
+	call	set_cursor					;Seta a posicao do cursor para printar a qunatidade de quadrados
+	lea		bx, msgRodape2					
+	call	printf_s
+	
+	ret
+mensagem_rodape		endp
 ;****************************************************
 		end
 ;****************************************************
